@@ -16,17 +16,24 @@ router.post(
             const error = new Error('An error occurred.');
             return next(error);
           }
-
           req.login(
-            user,
-            { session: false },
+            user, {
+            session: false
+          },
             async (error) => {
               if (error) return next(error);
 
-              const body = { _id: user._id, email: user.email };
-              const token = jwt.sign({ user: body }, 'TOP_SECRET');
+              const body = {
+                _id: user._id,
+                email: user.email
+              };
+              const token = jwt.sign({
+                user: body
+              }, 'TOP_SECRET');
 
-              return res.json({ token });
+              return res.json({
+                token
+              });
             }
           );
         } catch (error) {
@@ -36,11 +43,12 @@ router.post(
     )(req, res, next);
   }
 );
-
 router.post(
   '/signup',
   passport.authenticate('signup', { session: false }),
   async (req, res, next) => {
+    console.log('>>>>')
+    console.log(req)
     res.json({
       message: 'Signup successful',
       user: req.user
