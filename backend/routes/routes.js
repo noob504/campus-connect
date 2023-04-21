@@ -29,10 +29,14 @@ router.post(
               };
               const token = jwt.sign({
                 user: body
-              }, 'TOP_SECRET');
+              }, 'TOP_SECRET', {
+                expiresIn: '1d'
+              });
+              console.log(token)
 
               return res.json({
-                token
+                token,
+                expiresIn: 86400
               });
             }
           );

@@ -1,28 +1,42 @@
-import React from "react"
+import React, { useEffect } from "react"
 import api from "../api"
-import { useSignIn } from 'react-auth-kit'
+import { useAuthUser, useSignIn, useIsAuthenticated } from 'react-auth-kit'
+
+import { useNavigate } from "react-router-dom"
 
 const SignInComponent = () => {
-  const signIn = useSignIn()
-  const [formData, setFormData] = React.useState({ email: '', password: '' })
+  const signIn = useSignIn();
+  const [formData, setFormData] = React.useState({ email: '', password: '' });
+  const navigate = useNavigate();
+
+  const IsAuthenticated = useIsAuthenticated();
+
+  useEffect(() => {
+    if (IsAuthenticated()) {
+      navigate('/secure')
+    }
+  }, [IsAuthenticated])
+
 
   const onSubmit = (e) => {
     e.preventDefault()
-    api.post('/sigin', {}, { params: formData })
+    api.post('/login', formData)
       .then((res) => {
         if (res.status === 200) {
+          console.log(res)
           if (signIn(
             {
-              secret_token: res.data.secret_token,
+              token: res.data.token,
               expiresIn: res.data.expiresIn,
               tokenType: "Bearer",
-              // authState: res.data.authUserState,
-              // refreshToken: res.data.refreshToken,                    // Only if you are using refreshToken feature
-              // refreshTokenExpireIn: res.data.refreshTokenExpireIn     // Only if you are using refreshToken feature
+              authState: { user: res.data.user }
             }
           )) { // Only if you are using refreshToken feature
             // Redirect or do-something
+            console.log('success')
+            navigate('/secure')
           } else {
+            alert('error')
             //Throw error
           }
         }
