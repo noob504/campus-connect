@@ -2,13 +2,14 @@ import { React } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import SignInComponent from './auth/sign_in'
 import PrivateComp from './private';
-import { useIsAuthenticated } from 'react-auth-kit';
+import { useIsAuthenticated, useAuthUser } from 'react-auth-kit';
 import { useLocation, Navigate } from 'react-router-dom';
 import Home from './home';
 import SignUpComponent from './auth/sign_up';
 
 
 const PrivateRoute = ({ children, loginPath }) => {
+  const User = useAuthUser();
   const isAuthentiated = useIsAuthenticated();
   const location = useLocation();
 

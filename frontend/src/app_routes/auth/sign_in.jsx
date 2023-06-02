@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useSignIn, useIsAuthenticated } from 'react-auth-kit';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import api from "../../api";
@@ -39,7 +39,6 @@ const SignInComponent = () => {
     api.post('/login', formData)
       .then((res) => {
         if (res.status === 200) {
-          console.log(res)
           if (signIn({
             token: res.data.token,
             expiresIn: res.data.expiresIn,
@@ -74,9 +73,11 @@ const SignInComponent = () => {
           sx={{ marginBottom: 2 }}
         />
         <Button variant="contained" type="submit">Submit</Button>
+        <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Don't have an account? <Link to="/signup">Sign up</Link>
+        </Typography>
       </FormContainer>
-    </Box>
-  )
+    </Box>)
 }
 
 export default SignInComponent;

@@ -4,7 +4,9 @@ const passport = require('passport');
 const bodyParser = require('body-parser');
 const cors = require('cors')
 
-const UserModel = require('./models/user_model');
+console.log(process.env.S3_ACCESS_ID)
+console.log(process.env.S3_ACCESS_KEY)
+console.log(process.env.MONGO_URI)
 
 mongoose.connect(process.env.MONGO_URI);
 mongoose.connection.on('error', error => console.log(error));
@@ -20,9 +22,11 @@ const app = express();
 app.use(bodyParser.json());
 
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://example.com', 'http://localhost:5273']
+}));
+
 app.use((req, res, next) => {
-  console.log(req)
   console.log('host:', req.hostname)
   console.log('path:', req.path)
   console.log('method:', req.method)
@@ -39,7 +43,7 @@ app.use('/api/v1', routes);
 app.use('/user', passport.authenticate('jwt', { session: false }), secureRoute);
 
 // Handle errors.
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.json({ error: err });
 });
