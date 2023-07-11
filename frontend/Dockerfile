@@ -8,13 +8,18 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --only=production
+RUN npm update
+RUN npm install
+RUN npm install -g vite
 
 # Copy the rest of the application code to the container
 COPY . .
+
+# Build the Vite application
+RUN npm run build
 
 # Expose port 5000 for the Node.js server to listen on
 EXPOSE 5173
 
 # Start the Node.js server
-CMD ["npm", "run","dev"]
+ENTRYPOINT ["npm", "run","dev"]
