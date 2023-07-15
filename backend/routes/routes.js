@@ -2,51 +2,38 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
+
 const PostModel = require('../models/post_model');
+const ProfileModel = require('../models/profile_model');
+
 const router = express.Router();
 
 
-router.post(
-  '/login',
-  async (req, res, next) => {
-    passport.authenticate(
-      'login',
-      async (err, user, info) => {
-        try {
-          if (err || !user) {
-            const error = new Error('An error occurred.');
-            return next(error);
-          }
-          req.login(
-            user, {
-            session: false
-          },
-            async (error) => {
-              if (error) return next(error);
-
-              const body = {
-                _id: user._id,
-                email: user.email
-              };
-              const token = jwt.sign({
-                user: body
-              }, 'TOP_SECRET', {
-                expiresIn: '1d'
-              });
-
-              return res.json({
-                token,
-                expiresIn: 86400
-              });
-            }
-          );
-        } catch (error) {
-          return next(error);
-        }
+router.post('/login', async (req, res, next) => {
+  console.log(req.body);
+  passport.authenticate('login', async (err, user, info) => {
+    try {
+      if (err || !user) {
+        const error = new Error(info.message || 'An error occurred.');
+        return res.status(401).json({ error: error.message });
       }
-    )(req, res, next);
-  }
-);
+      req.login(user, { session: false }, async (error) => {
+        if (error) return next(error);
+
+        const body = { _id: user._id, email: user.email };
+        const token = jwt.sign({ user: body }, 'TOP_SECRET', { expiresIn: '1d' });
+
+        return res.json({
+          token,
+          expiresIn: 86400
+        });
+      });
+    } catch (error) {
+      return next(error);
+    }
+  })(req, res, next);
+});
+
 router.post(
   '/signup',
   passport.authenticate('signup', { session: false }),
@@ -118,6 +105,40 @@ router.post("/post", function(req, res) {
         });
       });
   });
+});
+
+router.post('/profile', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    passport.authenticate()
+
+    const userId = req.user._id; // Access the authenticated user's ID from req.user
+    const updates = req.body;
+    const options = { new: true }; // Return the updated document
+
+    const updatedProfile = await ProfileModel.findOneAndUpdate({ user: userId }, updates, options);
+
+    res.json(updatedProfile);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+router.get('/profile', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    const userId = req.user._id; // Access the authenticated user's ID from req.user
+
+    const userProfile = await ProfileModel.findOne({ user: userId });
+
+    if (!userProfile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    res.json(userProfile);
+  } catch (error) {
+    console.error('Error retrieving profile:', error);
+    res.status(500).json({ error: 'Failed to retrieve profile' });
+  }
 });
 
 module.exports = router;
