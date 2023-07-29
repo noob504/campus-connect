@@ -68,8 +68,9 @@ router.post("/upload", function(req, res) {
   });
 });
 
-router.post("/post", function(req, res) {
+router.post("/post", passport.authenticate("jwt", { session: false }), function(req, res) {
   singleUpload(req, res, function(err) {
+    const { mediaUrl, type, description, postType } = req.body;
     if (err) {
       return res.json({
         success: false,
@@ -81,14 +82,18 @@ router.post("/post", function(req, res) {
       });
     }
 
+    // Assuming the authenticated user's information is available in req.user
+    const authenticatedUserId = req.user._id;
+
     // Create a new post
     const post = new PostModel({
-      mediaUrl: req.file.location,
-      type: ["image", "photo"],
-      description: "This is a post description",
-      postType: "public",
-      userId: "1234567890"
+      mediaUrl: req.file ? req.file.location : null,
+      type: type,
+      description: description,
+      postType: postType,
+      userId: authenticatedUserId, // Use the authenticated user's ID for the post
     });
+
     // Save the post to the database
     post.save()
       .then(() => {
@@ -106,7 +111,6 @@ router.post("/post", function(req, res) {
       });
   });
 });
-
 router.post('/profile', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
     passport.authenticate()
